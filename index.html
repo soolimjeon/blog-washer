@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>블로그 워셔</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #00c473; --green-light: #e6faf2; --green-dark: #00864f;
+    --gray-50: #f8f9fa; --gray-100: #f1f3f5; --gray-200: #e9ecef;
+    --gray-400: #ced4da; --gray-600: #868e96; --gray-800: #343a40; --gray-900: #212529;
+    --radius: 12px; --shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #f4f7f5; color: var(--gray-900); min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: #fff; border-bottom: 1px solid var(--gray-200); padding: 16px 32px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .logo-dot { width: 28px; height: 28px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #fff; font-weight: 700; }
+  header h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-badge { margin-left: auto; background: var(--green-light); color: var(--green-dark); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+  main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; max-width: 1400px; width: 100%; margin: 0 auto; padding: 28px 24px; gap: 20px; }
+  .panel { background: #fff; border-radius: var(--radius); border: 1px solid var(--gray-200); display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); }
+  .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
+  .panel-title { font-size: 12px; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.6px; }
+  .panel-meta { font-size: 12px; color: var(--gray-400); }
+  .upload-zone { margin: 20px; border: 2px dashed var(--gray-400); border-radius: 10px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.18s; background: var(--gray-50); }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--green); background: var(--green-light); }
+  .upload-icon { font-size: 32px; margin-bottom: 10px; }
+  .upload-title { font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: var(--gray-600); }
+  .upload-ext { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
+  .file-loaded { display: none; margin: 20px; background: var(--green-light); border: 1px solid #b2f0d8; border-radius: 10px; padding: 14px 16px; align-items: center; gap: 12px; }
+  .file-loaded.visible { display: flex; }
+  .file-icon { font-size: 24px; flex-shrink: 0; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name { font-size: 13px; font-weight: 600; color: var(--green-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-size { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
+  .file-remove { background: none; border: none; cursor: pointer; color: var(--gray-400); font-size: 18px; padding: 2px 6px; border-radius: 4px; }
+  .file-remove:hover { color: #e03131; background: #fff5f5; }
+  .text-preview-wrap { display: none; flex-direction: column; border-top: 1px solid var(--gray-100); }
+  .text-preview-wrap.visible { display: flex; }
+  .text-preview-header { padding: 10px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
+  .text-preview-label { font-size: 11px; color: var(--gray-600); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+  .text-preview-toggle { font-size: 11px; color: var(--green-dark); cursor: pointer; background: none; border: none; font-family: inherit; font-weight: 500; }
+  #extractedText { border: none; outline: none; resize: none; padding: 16px 20px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; line-height: 1.9; color: var(--gray-800); background: transparent; min-height: 160px; max-height: 240px; }
+  .always-on-bar { padding: 12px 20px; border-top: 1px solid var(--gray-100); background: var(--gray-50); display: flex; gap: 8px; flex-wrap: wrap; }
+  .always-badge { background: var(--green-light); border: 1px solid #b2f0d8; color: var(--green-dark); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+  .convert-wrap { padding: 14px 20px; border-top: 1px solid var(--gray-100); }
+  #convertBtn { width: 100%; padding: 14px; background: var(--green); color: #fff; border: none; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  #convertBtn:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-1px); }
+  #convertBtn:disabled { background: var(--gray-400); cursor: not-allowed; }
+  .shortcut-hint { text-align: center; font-size: 11px; color: var(--gray-400); margin-top: 8px; }
+  .output-tabs { display: flex; border-bottom: 1px solid var(--gray-100); }
+  .tab-btn { padding: 12px 18px; font-size: 13px; font-weight: 500; border: none; background: transparent; cursor: pointer; color: var(--gray-600); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif; }
+  .tab-btn.active { color: var(--green-dark); border-bottom-color: var(--green); }
+  .output-content { flex: 1; position: relative; min-height: 480px; }
+  #previewPane, #htmlPane { position: absolute; inset: 0; overflow-y: auto; padding: 20px; display: none; }
+  #previewPane.visible, #htmlPane.visible { display: block; }
+  #previewPane { font-size: 14px; line-height: 1.9; color: var(--gray-800); }
+  #htmlCode { font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.7; color: #2d6a4f; background: transparent; border: none; outline: none; resize: none; width: 100%; height: 100%; min-height: 460px; }
+  .output-footer { padding: 12px 20px; border-top: 1px solid var(--gray-100); display: flex; gap: 8px; background: var(--gray-50); }
+  .copy-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--gray-200); background: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--gray-800); transition: all 0.15s; }
+  .copy-btn:hover { border-color: var(--green); color: var(--green-dark); background: var(--green-light); }
+  .copy-btn.primary { background: var(--gray-900); color: #fff; border-color: var(--gray-900); }
+  .copy-btn.primary:hover { background: #000; color: #fff; }
+  .empty-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--gray-400); padding: 40px; text-align: center; }
+  .empty-icon { font-size: 40px; }
+  .empty-state p { font-size: 14px; line-height: 1.9; }
+  .empty-how { background: var(--gray-50); border-radius: 10px; padding: 14px 20px; font-size: 12px; color: var(--gray-600); line-height: 2.1; text-align: left; width: 100%; max-width: 280px; }
+  .loading-wrap { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px; text-align: center; }
+  .loading-wrap.visible { display: flex; }
+  .spinner { width: 38px; height: 38px; border: 3px solid var(--green-light); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .loading-step { font-size: 12px; color: var(--gray-400); display: flex; align-items: center; gap: 6px; transition: all 0.3s; }
+  .loading-step.done { color: var(--green-dark); }
+  .loading-step.active { color: var(--gray-800); font-weight: 600; }
+  #previewPane h3 { font-size: 17px; font-weight: 700; margin: 28px 0 10px; padding-left: 10px; border-left: 4px solid #00c473; }
+  #previewPane blockquote { background: #f8f9fa; border-left: 4px solid #00c473; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 14px; color: #495057; line-height: 1.8; }
+  #previewPane hr { border: none; border-top: 1px solid #e9ecef; margin: 24px 0; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; padding: 16px; } header { padding: 14px 20px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-dot">W</div>
+  <h1>블로그 워셔</h1>
+  <div class="header-badge">네이버 블로그 전용</div>
+</header>
+<main>
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">원고 업로드</span>
+      <span class="panel-meta">워드 파일 (.docx)</span>
+    </div>
+    <input type="file" id="fileInput" accept=".docx,.doc" style="display:none">
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">클릭해서 워드 파일 업로드</div>
+      <div class="upload-sub">원고 .docx 파일을 올려주세요</div>
+      <div class="upload-ext">.docx · .doc 지원 · 드래그&amp;드롭도 가능</div>
+    </div>
+    <div class="file-loaded" id="fileLoaded">
+      <div class="file-icon">📝</div>
+      <div class="file-info">
+        <div class="file-name" id="fileName">-</div>
+        <div class="file-size" id="fileSize">-</div>
+      </div>
+      <button class="file-remove" id="removeBtn">&#10005;</button>
+    </div>
+    <div class="text-preview-wrap" id="textPreviewWrap">
+      <div class="text-preview-header">
+        <span class="text-preview-label">추출된 텍스트 미리보기</span>
+        <button class="text-preview-toggle" id="toggleBtn">접기 ▲</button>
+      </div>
+      <textarea id="extractedText" placeholder="텍스트 추출 중..."></textarea>
+    </div>
+    <div class="always-on-bar">
+      <div class="always-badge">✓ 친근한 경어체</div>
+      <div class="always-badge">✓ 이모지</div>
+      <div class="always-badge">✓ 오탈자 교정</div>
+      <div class="always-badge">✓ 사진 배치 조언</div>
+      <div class="always-badge">✓ 모바일 최적화</div>
+    </div>
+    <div class="convert-wrap">
+      <button id="convertBtn" disabled>네이버 블로그 HTML로 변환하기</button>
+      <div class="shortcut-hint" id="shortcutHint">파일 업로드 후 활성화</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header" style="padding-bottom:0;border-bottom:none;">
+      <span class="panel-title">변환 결과</span>
+    </div>
+    <div class="output-tabs">
+      <button class="tab-btn active" id="tabPreview">미리보기</button>
+      <button class="tab-btn" id="tabHtml">HTML 코드</button>
+    </div>
+    <div class="output-content">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">✦</div>
+        <p>워드 파일을 업로드하고<br>변환 버튼을 눌러주세요.</p>
+        <div class="empty-how">
+          1️⃣ .docx 파일 업로드<br>
+          2️⃣ 텍스트 자동 추출 확인<br>
+          3️⃣ 변환 버튼 클릭<br>
+          4️⃣ HTML 복사 →<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;네이버 블로그 &lt;&gt; 에 붙여넣기
+        </div>
+      </div>
+      <div class="loading-wrap" id="loadingState">
+        <div class="spinner"></div>
+        <div class="loading-steps">
+          <div class="loading-step" id="step1">✦ 원고 분석 중...</div>
+          <div class="loading-step" id="step2">✦ 오탈자 교정 중...</div>
+          <div class="loading-step" id="step3">✦ 어투 변환 중...</div>
+          <div class="loading-step" id="step4">✦ HTML 생성 중...</div>
+        </div>
+      </div>
+      <div id="previewPane"></div>
+      <div id="htmlPane"><textarea id="htmlCode" readonly></textarea></div>
+    </div>
+    <div class="output-footer" id="outputFooter" style="display:none">
+      <button class="copy-btn" id="copyTextBtn">📋 텍스트 복사</button>
+      <button class="copy-btn primary" id="copyHtmlBtn">HTML 복사 — 네이버 바로 붙여넣기</button>
+    </div>
+  </div>
+</main>
+<script>
+var currentHTML = '';
+var extractedContent = '';
+var previewOpen = true;
+
+document.getElementById('uploadZone').addEventListener('click', function() {
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', function() {
+  if (this.files && this.files[0]) { handleFile(this.files[0]); }
+});
+var zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+zone.addEventListener('drop', function(e) {
+  e.preventDefault(); zone.classList.remove('drag-over');
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) { handleFile(e.dataTransfer.files[0]); }
+});
+document.getElementById('removeBtn').addEventListener('click', function() {
+  extractedContent = '';
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('fileLoaded').classList.remove('visible');
+  document.getElementById('textPreviewWrap').classList.remove('visible');
+  document.getElementById('fileInput').value = '';
+  document.getElementById('convertBtn').disabled = true;
+  document.getElementById('shortcutHint').textContent = '파일 업로드 후 활성화';
+});
+document.getElementById('toggleBtn').addEventListener('click', function() {
+  previewOpen = !previewOpen;
+  document.getElementById('extractedText').style.display = previewOpen ? 'block' : 'none';
+  this.textContent = previewOpen ? '접기 ▲' : '펼치기 ▼';
+});
+document.getElementById('tabPreview').addEventListener('click', function() { switchTab('preview'); });
+document.getElementById('tabHtml').addEventListener('click', function() { switchTab('html'); });
+document.getElementById('convertBtn').addEventListener('click', function() { convert(); });
+document.getElementById('copyTextBtn').addEventListener('click', function() {
+  navigator.clipboard.writeText(document.getElementById('previewPane').innerText).then(function() {
+    document.getElementById('copyTextBtn').textContent = '✅ 복사됐어요!';
+    setTimeout(function() { document.getElementById('copyTextBtn').textContent = '📋 텍스트 복사'; }, 2000);
+  });
+});
+document.getElementById('copyHtmlBtn').addEventListener('click', function() {
+  navigator.clipboard.writeText(currentHTML).then(function() {
+    document.getElementById('copyHtmlBtn').textContent = '✅ 복사! 네이버 <> 에 붙여넣기';
+    setTimeout(function() { document.getElementById('copyHtmlBtn').textContent = 'HTML 복사 — 네이버 바로 붙여넣기'; }, 2500);
+  });
+});
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'Enter' && !document.getElementById('convertBtn').disabled) { convert(); }
+});
+
+function handleFile(file) {
+  if (!file.name.match(/\.(docx|doc)$/i)) { alert('.docx 또는 .doc 파일만 업로드 가능해요!'); return; }
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatSize(file.size);
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('fileLoaded').classList.add('visible');
+  document.getElementById('textPreviewWrap').classList.add('visible');
+  document.getElementById('extractedText').value = '텍스트 추출 중...';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    mammoth.extractRawText({ arrayBuffer: e.target.result })
+      .then(function(result) {
+        extractedContent = result.value.trim();
+        if (!extractedContent) {
+          document.getElementById('extractedText').value = '텍스트를 찾을 수 없어요. .docx 파일인지 확인해주세요.';
+          return;
+        }
+        document.getElementById('extractedText').value = extractedContent;
+        document.getElementById('convertBtn').disabled = false;
+        document.getElementById('shortcutHint').textContent = 'Ctrl + Enter 로도 변환 가능';
+      })
+      .catch(function(err) {
+        document.getElementById('extractedText').value = '추출 오류: ' + err.message;
+      });
+  };
+  reader.onerror = function() { document.getElementById('extractedText').value = '파일을 읽을 수 없어요.'; };
+  reader.readAsArrayBuffer(file);
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function switchTab(tab) {
+  document.getElementById('tabPreview').classList.toggle('active', tab === 'preview');
+  document.getElementById('tabHtml').classList.toggle('active', tab === 'html');
+  document.getElementById('previewPane').classList.toggle('visible', tab === 'preview');
+  document.getElementById('htmlPane').classList.toggle('visible', tab === 'html');
+}
+
+function animateSteps() {
+  var steps = ['step1','step2','step3','step4'];
+  var i = 0;
+  var interval = setInterval(function() {
+    if (i > 0) {
+      var prev = document.getElementById(steps[i-1]);
+      prev.classList.remove('active'); prev.classList.add('done');
+    }
+    if (i < steps.length) { document.getElementById(steps[i]).classList.add('active'); i++; }
+    else { clearInterval(interval); }
+  }, 950);
+}
+
+function getSystemPrompt() {
+  return '네이버 블로그 전문 에디터. 원고를 월드비전 블로그 스타일로 워싱 후 네이버 블로그 HTML로 변환.\n\n'
+    + '[스타일] 친근한 경어체(~해요,~인데요), 짧은 문장, 모바일 최적화, 이모지, 소제목(이모지+키워드), 오탈자 교정\n\n'
+    + '[HTML 규칙] 인라인 style만 사용. class/외부CSS 금지.\n'
+    + '소제목: <h3 style="font-size:17px;font-weight:700;margin:28px 0 10px;padding-left:10px;border-left:4px solid #00c473;">\n'
+    + '인용구: <blockquote style="background:#f8f9fa;border-left:4px solid #00c473;padding:12px 16px;margin:12px 0;border-radius:0 8px 8px 0;font-size:14px;color:#495057;line-height:1.8;">\n'
+    + '구분선: <hr style="border:none;border-top:1px solid #e9ecef;margin:24px 0;">\n'
+    + '사진조언: <div style="background:#fff8e6;border:1px solid #ffd43b;border-radius:8px;padding:12px 16px;margin:16px 0;font-size:13px;color:#7a5a00;line-height:1.8;">📷 설명<br>💡 조언</div>\n'
+    + '강조: <b style="color:#00864f;">내용</b>\n'
+    + '문단: <p style="margin:0 0 8px;line-height:2.0;">내용</p>\n\n'
+    + 'HTML 코드만 출력. 설명없이. body태그 없이 본문만.';
+}
+
+function convert() {
+  var draft = document.getElementById('extractedText').value.trim();
+  if (!draft) { alert('원고를 먼저 업로드해주세요!'); return; }
+  var btn = document.getElementById('convertBtn');
+  btn.disabled = true;
+  btn.textContent = '변환 중...';
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('previewPane').classList.remove('visible');
+  document.getElementById('htmlPane').classList.remove('visible');
+  document.getElementById('loadingState').classList.add('visible');
+  document.getElementById('outputFooter').style.display = 'none';
+  ['step1','step2','step3','step4'].forEach(function(s) {
+    document.getElementById(s).classList.remove('active','done');
+  });
+  animateSteps();
+
+  fetch('/.netlify/functions/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4000,
+      system: getSystemPrompt(),
+      messages: [{ role: 'user', content: '다음 원고를 워싱해서 네이버 블로그 HTML로 변환해주세요:\n\n' + draft }]
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.error) {
+      document.getElementById('loadingState').classList.remove('visible');
+      document.getElementById('emptyState').style.display = 'flex';
+      document.getElementById('emptyState').querySelector('p').textContent = 'API 오류: ' + JSON.stringify(data.error);
+      return;
+    }
+    var html = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    currentHTML = html.replace(/^```html\n?/, '').replace(/\n?```$/, '').trim();
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('previewPane').innerHTML = currentHTML;
+    document.getElementById('previewPane').classList.add('visible');
+    document.getElementById('htmlCode').value = currentHTML;
+    document.getElementById('outputFooter').style.display = 'flex';
+    switchTab('preview');
+  })
+  .catch(function(err) {
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('emptyState').style.display = 'flex';
+    document.getElementById('emptyState').querySelector('p').textContent = '오류: ' + err.message;
+  })
+  .finally(function() {
+    btn.disabled = false;
+    btn.textContent = '다시 변환하기';
+  });
+}
+</script>
+</body>
+</html>
