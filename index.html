@@ -301,7 +301,7 @@ function convert() {
   });
   animateSteps();
 
-  fetch('/.netlify/functions/claude', {
+  fetch('/api/claude', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
