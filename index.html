@@ -10,6 +10,7 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --green: #00c473; --green-light: #e6faf2; --green-dark: #00864f;
+    --blue: #3b82f6; --blue-light: #eff6ff; --blue-dark: #1d4ed8;
     --gray-50: #f8f9fa; --gray-100: #f1f3f5; --gray-200: #e9ecef;
     --gray-400: #ced4da; --gray-600: #868e96; --gray-800: #343a40; --gray-900: #212529;
     --radius: 12px; --shadow: 0 2px 16px rgba(0,0,0,0.07);
@@ -23,59 +24,82 @@
   .panel { background: #fff; border-radius: var(--radius); border: 1px solid var(--gray-200); display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); }
   .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
   .panel-title { font-size: 12px; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.6px; }
-  .panel-meta { font-size: 12px; color: var(--gray-400); }
-  .upload-zone { margin: 20px; border: 2px dashed var(--gray-400); border-radius: 10px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.18s; background: var(--gray-50); }
+  .input-tabs { display: flex; border-bottom: 1px solid var(--gray-100); }
+  .input-tab { flex: 1; padding: 10px 6px; font-size: 12px; font-weight: 500; border: none; background: transparent; cursor: pointer; color: var(--gray-600); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif; }
+  .input-tab.active { color: var(--green-dark); border-bottom-color: var(--green); background: var(--green-light); }
+  .input-section { display: none; flex-direction: column; }
+  .input-section.active { display: flex; }
+  .upload-zone { margin: 16px; border: 2px dashed var(--gray-400); border-radius: 10px; padding: 28px 20px; text-align: center; cursor: pointer; transition: all 0.18s; background: var(--gray-50); }
   .upload-zone:hover, .upload-zone.drag-over { border-color: var(--green); background: var(--green-light); }
-  .upload-icon { font-size: 32px; margin-bottom: 10px; }
-  .upload-title { font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 4px; }
-  .upload-sub { font-size: 12px; color: var(--gray-600); }
-  .upload-ext { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
-  .file-loaded { display: none; margin: 20px; background: var(--green-light); border: 1px solid #b2f0d8; border-radius: 10px; padding: 14px 16px; align-items: center; gap: 12px; }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-title { font-size: 13px; font-weight: 600; color: var(--gray-800); margin-bottom: 3px; }
+  .upload-sub { font-size: 11px; color: var(--gray-600); }
+  .file-loaded { display: none; margin: 16px; background: var(--green-light); border: 1px solid #b2f0d8; border-radius: 10px; padding: 12px 14px; align-items: center; gap: 10px; }
   .file-loaded.visible { display: flex; }
-  .file-icon { font-size: 24px; flex-shrink: 0; }
-  .file-info { flex: 1; min-width: 0; }
-  .file-name { font-size: 13px; font-weight: 600; color: var(--green-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-size { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
-  .file-remove { background: none; border: none; cursor: pointer; color: var(--gray-400); font-size: 18px; padding: 2px 6px; border-radius: 4px; }
-  .file-remove:hover { color: #e03131; background: #fff5f5; }
+  .file-name { font-size: 13px; font-weight: 600; color: var(--green-dark); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-size { font-size: 11px; color: var(--gray-600); }
+  .file-remove { background: none; border: none; cursor: pointer; color: var(--gray-400); font-size: 16px; padding: 2px 6px; }
+  .url-input-wrap { margin: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .url-note { font-size: 12px; color: var(--gray-600); }
+  .url-input { width: 100%; padding: 10px 14px; border: 1px solid var(--gray-200); border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
+  .url-input:focus { border-color: var(--green); }
+  .url-row { display: flex; gap: 8px; align-items: center; }
+  .url-fetch-btn { padding: 10px 16px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .url-fetch-btn:hover { background: var(--green-dark); }
+  .url-fetch-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+  .url-status { font-size: 12px; color: var(--gray-600); }
+  .text-input-wrap { margin: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .text-note { font-size: 12px; color: var(--gray-600); }
+  #pasteText { width: 100%; border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; line-height: 1.8; outline: none; resize: none; min-height: 160px; transition: border-color 0.15s; }
+  #pasteText:focus { border-color: var(--green); }
+  .paste-use-btn { padding: 9px 16px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; align-self: flex-end; }
+  .paste-use-btn:hover { background: var(--green-dark); }
   .text-preview-wrap { display: none; flex-direction: column; border-top: 1px solid var(--gray-100); }
   .text-preview-wrap.visible { display: flex; }
-  .text-preview-header { padding: 10px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
-  .text-preview-label { font-size: 11px; color: var(--gray-600); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+  .text-preview-header { padding: 8px 16px; background: var(--gray-50); border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
+  .text-preview-label { font-size: 10px; color: var(--gray-600); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
   .text-preview-toggle { font-size: 11px; color: var(--green-dark); cursor: pointer; background: none; border: none; font-family: inherit; font-weight: 500; }
-  #extractedText { border: none; outline: none; resize: none; padding: 16px 20px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; line-height: 1.9; color: var(--gray-800); background: transparent; min-height: 160px; max-height: 240px; }
-  .always-on-bar { padding: 12px 20px; border-top: 1px solid var(--gray-100); background: var(--gray-50); display: flex; gap: 8px; flex-wrap: wrap; }
-  .always-badge { background: var(--green-light); border: 1px solid #b2f0d8; color: var(--green-dark); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
-  .convert-wrap { padding: 14px 20px; border-top: 1px solid var(--gray-100); }
-  #convertBtn { width: 100%; padding: 14px; background: var(--green); color: #fff; border: none; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  #extractedText { border: none; outline: none; resize: none; padding: 12px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; line-height: 1.8; color: var(--gray-800); background: transparent; min-height: 120px; max-height: 200px; }
+  .options-bar { padding: 10px 16px; border-top: 1px solid var(--gray-100); background: var(--gray-50); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .always-badge { background: var(--green-light); border: 1px solid #b2f0d8; color: var(--green-dark); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+  .toggle-badge { background: #fff; border: 1px solid var(--gray-400); color: var(--gray-600); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; cursor: pointer; transition: all 0.15s; user-select: none; }
+  .toggle-badge.on { background: var(--blue-light); border-color: var(--blue); color: var(--blue-dark); }
+  .convert-wrap { padding: 12px 16px; border-top: 1px solid var(--gray-100); }
+  #convertBtn { width: 100%; padding: 13px; background: var(--green); color: #fff; border: none; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.18s; }
   #convertBtn:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-1px); }
-  #convertBtn:disabled { background: var(--gray-400); cursor: not-allowed; }
-  .shortcut-hint { text-align: center; font-size: 11px; color: var(--gray-400); margin-top: 8px; }
+  #convertBtn:disabled { background: var(--gray-400); cursor: not-allowed; transform: none; }
+  .shortcut-hint { text-align: center; font-size: 11px; color: var(--gray-400); margin-top: 6px; }
   .output-tabs { display: flex; border-bottom: 1px solid var(--gray-100); }
-  .tab-btn { padding: 12px 18px; font-size: 13px; font-weight: 500; border: none; background: transparent; cursor: pointer; color: var(--gray-600); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif; }
+  .tab-btn { padding: 12px 16px; font-size: 12px; font-weight: 500; border: none; background: transparent; cursor: pointer; color: var(--gray-600); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif; }
   .tab-btn.active { color: var(--green-dark); border-bottom-color: var(--green); }
-  .output-content { flex: 1; position: relative; min-height: 480px; }
-  #previewPane, #htmlPane { position: absolute; inset: 0; overflow-y: auto; padding: 20px; display: none; }
-  #previewPane.visible, #htmlPane.visible { display: block; }
+  .output-content { flex: 1; position: relative; min-height: 460px; }
+  #previewPane, #htmlPane, #checklistPane { position: absolute; inset: 0; overflow-y: auto; padding: 20px; display: none; }
+  #previewPane.visible, #htmlPane.visible, #checklistPane.visible { display: block; }
   #previewPane { font-size: 14px; line-height: 1.9; color: var(--gray-800); }
-  #htmlCode { font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.7; color: #2d6a4f; background: transparent; border: none; outline: none; resize: none; width: 100%; height: 100%; min-height: 460px; }
-  .output-footer { padding: 12px 20px; border-top: 1px solid var(--gray-100); display: flex; gap: 8px; background: var(--gray-50); }
-  .copy-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--gray-200); background: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--gray-800); transition: all 0.15s; }
+  #htmlCode { font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.7; color: #2d6a4f; background: transparent; border: none; outline: none; resize: none; width: 100%; height: 100%; min-height: 440px; }
+  .output-footer { padding: 10px 16px; border-top: 1px solid var(--gray-100); display: flex; gap: 8px; background: var(--gray-50); }
+  .copy-btn { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid var(--gray-200); background: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--gray-800); transition: all 0.15s; }
   .copy-btn:hover { border-color: var(--green); color: var(--green-dark); background: var(--green-light); }
   .copy-btn.primary { background: var(--gray-900); color: #fff; border-color: var(--gray-900); }
   .copy-btn.primary:hover { background: #000; color: #fff; }
-  .empty-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--gray-400); padding: 40px; text-align: center; }
-  .empty-icon { font-size: 40px; }
-  .empty-state p { font-size: 14px; line-height: 1.9; }
-  .empty-how { background: var(--gray-50); border-radius: 10px; padding: 14px 20px; font-size: 12px; color: var(--gray-600); line-height: 2.1; text-align: left; width: 100%; max-width: 280px; }
-  .loading-wrap { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px; text-align: center; }
+  .empty-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--gray-400); padding: 40px; text-align: center; }
+  .empty-icon { font-size: 36px; }
+  .empty-state p { font-size: 13px; line-height: 1.9; }
+  .empty-how { background: var(--gray-50); border-radius: 10px; padding: 12px 16px; font-size: 12px; color: var(--gray-600); line-height: 2.1; text-align: left; width: 100%; max-width: 260px; }
+  .loading-wrap { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px; text-align: center; }
   .loading-wrap.visible { display: flex; }
-  .spinner { width: 38px; height: 38px; border: 3px solid var(--green-light); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--green-light); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .loading-steps { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
   .loading-step { font-size: 12px; color: var(--gray-400); display: flex; align-items: center; gap: 6px; transition: all 0.3s; }
   .loading-step.done { color: var(--green-dark); }
   .loading-step.active { color: var(--gray-800); font-weight: 600; }
+  .checklist-section { margin-bottom: 20px; }
+  .checklist-title { font-size: 13px; font-weight: 700; color: var(--gray-800); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--gray-100); }
+  .checklist-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; line-height: 1.6; }
+  .checklist-item.good { background: var(--green-light); color: var(--green-dark); }
+  .checklist-item.warn { background: #fff8e6; color: #7a5a00; }
+  .checklist-item.tip { background: var(--blue-light); color: var(--blue-dark); }
   #previewPane h3 { font-size: 17px; font-weight: 700; margin: 28px 0 10px; padding-left: 10px; border-left: 4px solid #00c473; }
   #previewPane blockquote { background: #f8f9fa; border-left: 4px solid #00c473; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 14px; color: #495057; line-height: 1.8; }
   #previewPane hr { border: none; border-top: 1px solid #e9ecef; margin: 24px 0; }
@@ -91,24 +115,50 @@
 <main>
   <div class="panel">
     <div class="panel-header">
-      <span class="panel-title">원고 업로드</span>
-      <span class="panel-meta">워드 파일 (.docx)</span>
+      <span class="panel-title">원고 입력</span>
     </div>
-    <input type="file" id="fileInput" accept=".docx,.doc" style="display:none">
-    <div class="upload-zone" id="uploadZone">
-      <div class="upload-icon">📄</div>
-      <div class="upload-title">클릭해서 워드 파일 업로드</div>
-      <div class="upload-sub">원고 .docx 파일을 올려주세요</div>
-      <div class="upload-ext">.docx · .doc 지원 · 드래그&amp;드롭도 가능</div>
+    <div class="input-tabs">
+      <button class="input-tab active" id="tabFile">📄 파일</button>
+      <button class="input-tab" id="tabUrl">🔗 URL</button>
+      <button class="input-tab" id="tabText">✏️ 직접입력</button>
     </div>
-    <div class="file-loaded" id="fileLoaded">
-      <div class="file-icon">📝</div>
-      <div class="file-info">
-        <div class="file-name" id="fileName">-</div>
-        <div class="file-size" id="fileSize">-</div>
+
+    <div class="input-section active" id="sectionFile">
+      <input type="file" id="fileInput" accept=".docx,.doc" style="display:none">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📄</div>
+        <div class="upload-title">클릭해서 워드 파일 업로드</div>
+        <div class="upload-sub">.docx · .doc · 드래그&amp;드롭 가능</div>
       </div>
-      <button class="file-remove" id="removeBtn">&#10005;</button>
+      <div class="file-loaded" id="fileLoaded">
+        <span style="font-size:20px">📝</span>
+        <div style="flex:1;min-width:0">
+          <div class="file-name" id="fileName">-</div>
+          <div class="file-size" id="fileSize">-</div>
+        </div>
+        <button class="file-remove" id="removeBtn">✕</button>
+      </div>
     </div>
+
+    <div class="input-section" id="sectionUrl">
+      <div class="url-input-wrap">
+        <div class="url-note">랜딩페이지나 웹페이지 URL을 입력하면 텍스트와 이미지를 자동 추출해요.</div>
+        <input type="text" id="urlInput" class="url-input" placeholder="https://example.com">
+        <div class="url-row">
+          <button class="url-fetch-btn" id="fetchUrlBtn">본문 추출하기</button>
+          <span class="url-status" id="urlStatus"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-section" id="sectionText">
+      <div class="text-input-wrap">
+        <div class="text-note">텍스트를 직접 붙여넣어 주세요.</div>
+        <textarea id="pasteText" placeholder="여기에 원고 텍스트를 붙여넣어 주세요..."></textarea>
+        <button class="paste-use-btn" id="pasteUseBtn">이 텍스트로 변환하기</button>
+      </div>
+    </div>
+
     <div class="text-preview-wrap" id="textPreviewWrap">
       <div class="text-preview-header">
         <span class="text-preview-label">추출된 텍스트 미리보기</span>
@@ -116,18 +166,23 @@
       </div>
       <textarea id="extractedText" placeholder="텍스트 추출 중..."></textarea>
     </div>
-    <div class="always-on-bar">
+
+    <div class="options-bar">
       <div class="always-badge">✓ 친근한 경어체</div>
       <div class="always-badge">✓ 이모지</div>
       <div class="always-badge">✓ 오탈자 교정</div>
       <div class="always-badge">✓ 사진 배치 조언</div>
       <div class="always-badge">✓ 모바일 최적화</div>
+      <div class="toggle-badge" id="seoToggle">SEO</div>
+      <div class="toggle-badge" id="geoToggle">GEO</div>
     </div>
+
     <div class="convert-wrap">
       <button id="convertBtn" disabled>네이버 블로그 HTML로 변환하기</button>
       <div class="shortcut-hint" id="shortcutHint">파일 업로드 후 활성화</div>
     </div>
   </div>
+
   <div class="panel">
     <div class="panel-header" style="padding-bottom:0;border-bottom:none;">
       <span class="panel-title">변환 결과</span>
@@ -135,17 +190,18 @@
     <div class="output-tabs">
       <button class="tab-btn active" id="tabPreview">미리보기</button>
       <button class="tab-btn" id="tabHtml">HTML 코드</button>
+      <button class="tab-btn" id="tabChecklist" style="display:none">📋 SEO/GEO</button>
     </div>
     <div class="output-content">
       <div class="empty-state" id="emptyState">
         <div class="empty-icon">✦</div>
-        <p>워드 파일을 업로드하고<br>변환 버튼을 눌러주세요.</p>
+        <p>원고를 입력하고<br>변환 버튼을 눌러주세요.</p>
         <div class="empty-how">
-          1️⃣ .docx 파일 업로드<br>
-          2️⃣ 텍스트 자동 추출 확인<br>
-          3️⃣ 변환 버튼 클릭<br>
+          1️⃣ 파일 / URL / 직접 입력<br>
+          2️⃣ 변환 버튼 클릭<br>
+          3️⃣ 미리보기 확인<br>
           4️⃣ HTML 복사 →<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;네이버 블로그 &lt;&gt; 에 붙여넣기
+          &nbsp;&nbsp;&nbsp;&nbsp;네이버 블로그 &lt;&gt; 붙여넣기
         </div>
       </div>
       <div class="loading-wrap" id="loadingState">
@@ -159,21 +215,48 @@
       </div>
       <div id="previewPane"></div>
       <div id="htmlPane"><textarea id="htmlCode" readonly></textarea></div>
+      <div id="checklistPane"></div>
     </div>
     <div class="output-footer" id="outputFooter" style="display:none">
       <button class="copy-btn" id="copyTextBtn">📋 텍스트 복사</button>
-      <button class="copy-btn primary" id="copyHtmlBtn">HTML 복사 — 네이버 바로 붙여넣기</button>
+      <button class="copy-btn primary" id="copyHtmlBtn">HTML 복사 — 네이버 붙여넣기</button>
     </div>
   </div>
 </main>
+
 <script>
 var currentHTML = '';
 var extractedContent = '';
 var previewOpen = true;
+var seoOn = false;
+var geoOn = false;
+var currentInputMode = 'file';
+var extractedImages = [];
 
-document.getElementById('uploadZone').addEventListener('click', function() {
-  document.getElementById('fileInput').click();
-});
+document.getElementById('tabFile').addEventListener('click', function() { switchInputTab('file'); });
+document.getElementById('tabUrl').addEventListener('click', function() { switchInputTab('url'); });
+document.getElementById('tabText').addEventListener('click', function() { switchInputTab('text'); });
+
+function switchInputTab(mode) {
+  currentInputMode = mode;
+  var modes = ['file','url','text'];
+  modes.forEach(function(m) {
+    var cap = m.charAt(0).toUpperCase() + m.slice(1);
+    document.getElementById('tab' + cap).classList.toggle('active', m === mode);
+    document.getElementById('section' + cap).classList.toggle('active', m === mode);
+  });
+  resetExtracted();
+}
+
+function resetExtracted() {
+  extractedContent = '';
+  extractedImages = [];
+  document.getElementById('textPreviewWrap').classList.remove('visible');
+  document.getElementById('convertBtn').disabled = true;
+  document.getElementById('shortcutHint').textContent = '입력 후 활성화';
+}
+
+document.getElementById('uploadZone').addEventListener('click', function() { document.getElementById('fileInput').click(); });
 document.getElementById('fileInput').addEventListener('change', function() {
   if (this.files && this.files[0]) { handleFile(this.files[0]); }
 });
@@ -185,22 +268,67 @@ zone.addEventListener('drop', function(e) {
   if (e.dataTransfer.files && e.dataTransfer.files[0]) { handleFile(e.dataTransfer.files[0]); }
 });
 document.getElementById('removeBtn').addEventListener('click', function() {
-  extractedContent = '';
   document.getElementById('uploadZone').style.display = 'block';
   document.getElementById('fileLoaded').classList.remove('visible');
-  document.getElementById('textPreviewWrap').classList.remove('visible');
   document.getElementById('fileInput').value = '';
-  document.getElementById('convertBtn').disabled = true;
-  document.getElementById('shortcutHint').textContent = '파일 업로드 후 활성화';
+  resetExtracted();
 });
+
+document.getElementById('fetchUrlBtn').addEventListener('click', function() {
+  var url = document.getElementById('urlInput').value.trim();
+  if (!url) { alert('URL을 입력해주세요!'); return; }
+  if (!url.startsWith('http')) { url = 'https://' + url; document.getElementById('urlInput').value = url; }
+  var btn = document.getElementById('fetchUrlBtn');
+  btn.disabled = true; btn.textContent = '추출 중...';
+  document.getElementById('urlStatus').textContent = '';
+  fetch('/api/fetch-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: url })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.error) { document.getElementById('urlStatus').textContent = '오류: ' + data.error; return; }
+    extractedContent = data.text || '';
+    extractedImages = data.images || [];
+    showExtracted(extractedContent);
+    document.getElementById('urlStatus').textContent = '완료! 이미지 ' + extractedImages.length + '개 발견';
+  })
+  .catch(function(err) { document.getElementById('urlStatus').textContent = '오류: ' + err.message; })
+  .finally(function() { btn.disabled = false; btn.textContent = '본문 추출하기'; });
+});
+
+document.getElementById('pasteUseBtn').addEventListener('click', function() {
+  var text = document.getElementById('pasteText').value.trim();
+  if (!text) { alert('텍스트를 입력해주세요!'); return; }
+  extractedContent = text;
+  showExtracted(text);
+});
+
+document.getElementById('seoToggle').addEventListener('click', function() {
+  seoOn = !seoOn;
+  this.classList.toggle('on', seoOn);
+  this.textContent = seoOn ? '✓ SEO' : 'SEO';
+  document.getElementById('tabChecklist').style.display = (seoOn || geoOn) ? 'block' : 'none';
+});
+document.getElementById('geoToggle').addEventListener('click', function() {
+  geoOn = !geoOn;
+  this.classList.toggle('on', geoOn);
+  this.textContent = geoOn ? '✓ GEO' : 'GEO';
+  document.getElementById('tabChecklist').style.display = (seoOn || geoOn) ? 'block' : 'none';
+});
+
 document.getElementById('toggleBtn').addEventListener('click', function() {
   previewOpen = !previewOpen;
   document.getElementById('extractedText').style.display = previewOpen ? 'block' : 'none';
   this.textContent = previewOpen ? '접기 ▲' : '펼치기 ▼';
 });
-document.getElementById('tabPreview').addEventListener('click', function() { switchTab('preview'); });
-document.getElementById('tabHtml').addEventListener('click', function() { switchTab('html'); });
+
+document.getElementById('tabPreview').addEventListener('click', function() { switchOutputTab('preview'); });
+document.getElementById('tabHtml').addEventListener('click', function() { switchOutputTab('html'); });
+document.getElementById('tabChecklist').addEventListener('click', function() { switchOutputTab('checklist'); });
 document.getElementById('convertBtn').addEventListener('click', function() { convert(); });
+
 document.getElementById('copyTextBtn').addEventListener('click', function() {
   navigator.clipboard.writeText(document.getElementById('previewPane').innerText).then(function() {
     document.getElementById('copyTextBtn').textContent = '✅ 복사됐어요!';
@@ -210,7 +338,7 @@ document.getElementById('copyTextBtn').addEventListener('click', function() {
 document.getElementById('copyHtmlBtn').addEventListener('click', function() {
   navigator.clipboard.writeText(currentHTML).then(function() {
     document.getElementById('copyHtmlBtn').textContent = '✅ 복사! 네이버 <> 에 붙여넣기';
-    setTimeout(function() { document.getElementById('copyHtmlBtn').textContent = 'HTML 복사 — 네이버 바로 붙여넣기'; }, 2500);
+    setTimeout(function() { document.getElementById('copyHtmlBtn').textContent = 'HTML 복사 — 네이버 붙여넣기'; }, 2500);
   });
 });
 document.addEventListener('keydown', function(e) {
@@ -223,27 +351,27 @@ function handleFile(file) {
   document.getElementById('fileSize').textContent = formatSize(file.size);
   document.getElementById('uploadZone').style.display = 'none';
   document.getElementById('fileLoaded').classList.add('visible');
-  document.getElementById('textPreviewWrap').classList.add('visible');
   document.getElementById('extractedText').value = '텍스트 추출 중...';
+  document.getElementById('textPreviewWrap').classList.add('visible');
   var reader = new FileReader();
   reader.onload = function(e) {
     mammoth.extractRawText({ arrayBuffer: e.target.result })
       .then(function(result) {
         extractedContent = result.value.trim();
-        if (!extractedContent) {
-          document.getElementById('extractedText').value = '텍스트를 찾을 수 없어요. .docx 파일인지 확인해주세요.';
-          return;
-        }
-        document.getElementById('extractedText').value = extractedContent;
-        document.getElementById('convertBtn').disabled = false;
-        document.getElementById('shortcutHint').textContent = 'Ctrl + Enter 로도 변환 가능';
+        if (!extractedContent) { document.getElementById('extractedText').value = '텍스트를 찾을 수 없어요.'; return; }
+        showExtracted(extractedContent);
       })
-      .catch(function(err) {
-        document.getElementById('extractedText').value = '추출 오류: ' + err.message;
-      });
+      .catch(function(err) { document.getElementById('extractedText').value = '추출 오류: ' + err.message; });
   };
   reader.onerror = function() { document.getElementById('extractedText').value = '파일을 읽을 수 없어요.'; };
   reader.readAsArrayBuffer(file);
+}
+
+function showExtracted(text) {
+  document.getElementById('extractedText').value = text;
+  document.getElementById('textPreviewWrap').classList.add('visible');
+  document.getElementById('convertBtn').disabled = false;
+  document.getElementById('shortcutHint').textContent = 'Ctrl + Enter 로도 변환 가능';
 }
 
 function formatSize(bytes) {
@@ -252,21 +380,19 @@ function formatSize(bytes) {
   return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
-function switchTab(tab) {
-  document.getElementById('tabPreview').classList.toggle('active', tab === 'preview');
-  document.getElementById('tabHtml').classList.toggle('active', tab === 'html');
-  document.getElementById('previewPane').classList.toggle('visible', tab === 'preview');
-  document.getElementById('htmlPane').classList.toggle('visible', tab === 'html');
+function switchOutputTab(tab) {
+  ['preview','html','checklist'].forEach(function(t) {
+    var cap = t.charAt(0).toUpperCase() + t.slice(1);
+    document.getElementById('tab' + cap).classList.toggle('active', t === tab);
+    document.getElementById(t + 'Pane').classList.toggle('visible', t === tab);
+  });
 }
 
 function animateSteps() {
   var steps = ['step1','step2','step3','step4'];
   var i = 0;
   var interval = setInterval(function() {
-    if (i > 0) {
-      var prev = document.getElementById(steps[i-1]);
-      prev.classList.remove('active'); prev.classList.add('done');
-    }
+    if (i > 0) { var prev = document.getElementById(steps[i-1]); prev.classList.remove('active'); prev.classList.add('done'); }
     if (i < steps.length) { document.getElementById(steps[i]).classList.add('active'); i++; }
     else { clearInterval(interval); }
   }, 950);
@@ -303,21 +429,51 @@ function getSystemPrompt() {
     + 'HTML 코드만 출력. 설명이나 코드블록 표시 없이. DOCTYPE html head body 태그 없이 본문만.';
 }
 
+function renderChecklist(data) {
+  var html = '';
+  if (seoOn && data.seo && data.seo.length) {
+    html += '<div class="checklist-section"><div class="checklist-title">🔍 SEO 체크리스트</div>';
+    data.seo.forEach(function(item) {
+      html += '<div class="checklist-item ' + item.status + '"><span style="flex-shrink:0">' + item.icon + '</span><span>' + item.text + '</span></div>';
+    });
+    html += '</div>';
+  }
+  if (geoOn && data.geo && data.geo.length) {
+    html += '<div class="checklist-section"><div class="checklist-title">🤖 GEO 체크리스트</div>';
+    data.geo.forEach(function(item) {
+      html += '<div class="checklist-item ' + item.status + '"><span style="flex-shrink:0">' + item.icon + '</span><span>' + item.text + '</span></div>';
+    });
+    html += '</div>';
+  }
+  if (data.hashtags && data.hashtags.length) {
+    html += '<div class="checklist-section"><div class="checklist-title">🏷️ 추천 해시태그</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    data.hashtags.forEach(function(tag) {
+      html += '<span style="background:var(--green-light);color:var(--green-dark);padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;">#' + tag + '</span>';
+    });
+    html += '</div></div>';
+  }
+  document.getElementById('checklistPane').innerHTML = html || '<p style="color:var(--gray-400);font-size:13px;text-align:center;margin-top:40px;">체크리스트 생성 중 오류가 발생했어요.</p>';
+}
+
 function convert() {
   var draft = document.getElementById('extractedText').value.trim();
-  if (!draft) { alert('원고를 먼저 업로드해주세요!'); return; }
+  if (!draft) { alert('원고를 먼저 입력해주세요!'); return; }
   var btn = document.getElementById('convertBtn');
-  btn.disabled = true;
-  btn.textContent = '변환 중...';
+  btn.disabled = true; btn.textContent = '변환 중...';
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('previewPane').classList.remove('visible');
   document.getElementById('htmlPane').classList.remove('visible');
+  document.getElementById('checklistPane').classList.remove('visible');
   document.getElementById('loadingState').classList.add('visible');
   document.getElementById('outputFooter').style.display = 'none';
-  ['step1','step2','step3','step4'].forEach(function(s) {
-    document.getElementById(s).classList.remove('active','done');
-  });
+  ['step1','step2','step3','step4'].forEach(function(s) { document.getElementById(s).classList.remove('active','done'); });
   animateSteps();
+
+  var fullDraft = draft;
+  if (currentInputMode === 'url' && extractedImages.length > 0) {
+    fullDraft += '\n\n[추출된 이미지 URL - 적절한 위치에 배치 조언 포함]\n' + extractedImages.slice(0, 8).join('\n');
+  }
 
   fetch('/api/claude', {
     method: 'POST',
@@ -326,7 +482,7 @@ function convert() {
       model: 'claude-sonnet-4-5',
       max_tokens: 8000,
       system: getSystemPrompt(),
-      messages: [{ role: 'user', content: '다음 원고를 워싱해서 네이버 블로그 HTML로 변환해주세요:\n\n' + draft }]
+      messages: [{ role: 'user', content: '다음 원고를 워싱해서 네이버 블로그 HTML로 변환해주세요:\n\n' + fullDraft }]
     })
   })
   .then(function(res) { return res.json(); })
@@ -344,17 +500,39 @@ function convert() {
     document.getElementById('previewPane').classList.add('visible');
     document.getElementById('htmlCode').value = currentHTML;
     document.getElementById('outputFooter').style.display = 'flex';
-    switchTab('preview');
+    switchOutputTab('preview');
+
+    if ((seoOn || geoOn) && currentHTML) {
+      var checkPrompt = '아래 블로그 HTML을 분석해서 JSON으로만 응답해주세요.\n\n' + currentHTML + '\n\n';
+      if (seoOn) checkPrompt += 'SEO 분석: 키워드, 구조, 가독성 등 5가지 항목\n';
+      if (geoOn) checkPrompt += 'GEO 분석: 출처명확성, 인용가능성, 구조화, 신뢰도 등 5가지 항목\n';
+      checkPrompt += '해시태그 5~8개 추천\n\n형식: {"seo":[{"status":"good|warn|tip","icon":"✅|⚠️|💡","text":"내용"}],"geo":[...],"hashtags":["태그"]}';
+
+      fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: checkPrompt }]
+        })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(d) {
+        var text = (d.content && d.content[0] && d.content[0].text) ? d.content[0].text : '';
+        try {
+          var parsed = JSON.parse(text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim());
+          renderChecklist(parsed);
+        } catch(e) {}
+      }).catch(function() {});
+    }
   })
   .catch(function(err) {
     document.getElementById('loadingState').classList.remove('visible');
     document.getElementById('emptyState').style.display = 'flex';
     document.getElementById('emptyState').querySelector('p').textContent = '오류: ' + err.message;
   })
-  .finally(function() {
-    btn.disabled = false;
-    btn.textContent = '다시 변환하기';
-  });
+  .finally(function() { btn.disabled = false; btn.textContent = '다시 변환하기'; });
 }
 </script>
 </body>
