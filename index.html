@@ -561,7 +561,17 @@ function convert() {
 
   var fullDraft = draft;
   if (currentInputMode === 'url' && extractedImages.length > 0) {
-    fullDraft += '\n\n[추출된 이미지 URL - 적절한 위치에 배치 조언 포함]\n' + extractedImages.slice(0, 8).join('\n');
+    fullDraft += '
+
+[추출된 이미지 URL 목록 - 아래 이미지들을 문맥에 맞는 위치에 실제로 삽입해주세요]
+' + extractedImages.slice(0, 10).join('
+') + '
+
+[이미지 삽입 규칙]
+- 각 섹션의 내용과 관련된 이미지를 판단해서 적절한 위치에 삽입
+- 로고, 아이콘, 작은 UI 이미지는 제외하고 본문 관련 사진만 사용
+- 이미지 HTML: <img src="이미지URL" style="width:100%;border-radius:8px;margin:16px 0;display:block;">
+- 이미지 바로 아래 사진 설명 추가: <p style="font-size:12px;color:#868e96;text-align:center;margin:-8px 0 16px;">설명</p>';
   }
 
   fetch('/api/claude', {
