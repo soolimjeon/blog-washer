@@ -114,6 +114,25 @@
   .checklist-item.good { background: var(--green-light); color: var(--green-dark); }
   .checklist-item.warn { background: #fff8e6; color: #7a5a00; }
   .checklist-item.tip { background: var(--blue-light); color: var(--blue-dark); }
+  /* EXTRA FIELDS */
+  .extra-fields { padding: 10px 16px; border-top: 1px solid var(--gray-100); background: var(--gray-50); display: flex; flex-direction: column; gap: 8px; }
+  .extra-field-row { display: flex; flex-direction: column; gap: 4px; }
+  .extra-field-label { font-size: 10px; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.4px; }
+  .extra-field-input { width: 100%; padding: 8px 12px; border: 1px solid var(--gray-200); border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; background: #fff; }
+  .extra-field-input:focus { border-color: var(--green); }
+  /* TITLE SUGGESTIONS */
+  .title-suggestions { padding: 14px 16px; border-bottom: 1px solid var(--gray-100); background: var(--gray-50); display: none; }
+  .title-suggestions.visible { display: block; }
+  .title-suggestions-label { font-size: 10px; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+  .title-option { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--gray-200); background: #fff; margin-bottom: 6px; cursor: pointer; transition: all 0.15s; }
+  .title-option:hover { border-color: var(--green); background: var(--green-light); }
+  .title-option-text { font-size: 13px; color: var(--gray-800); flex: 1; line-height: 1.5; }
+  .title-copy-btn { font-size: 10px; font-weight: 600; color: var(--green-dark); background: var(--green-light); border: none; border-radius: 6px; padding: 3px 8px; cursor: pointer; white-space: nowrap; }
+  /* CHECKLIST APPLY BTN */
+  .checklist-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; line-height: 1.6; }
+  .checklist-apply-btn { font-size: 10px; font-weight: 600; color: #fff; background: var(--green); border: none; border-radius: 6px; padding: 3px 8px; cursor: pointer; white-space: nowrap; flex-shrink: 0; margin-left: auto; transition: all 0.15s; }
+  .checklist-apply-btn:hover { background: var(--green-dark); }
+  .checklist-apply-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
   #previewPane h3 { font-size: 17px; font-weight: 700; margin: 28px 0 10px; padding-left: 10px; border-left: 4px solid #00c473; }
   #previewPane blockquote { background: #f8f9fa; border-left: 4px solid #00c473; padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 14px; color: #495057; line-height: 1.8; }
   #previewPane hr { border: none; border-top: 1px solid #e9ecef; margin: 24px 0; }
@@ -200,6 +219,22 @@
       <div class="toggle-badge" id="geoToggle">GEO</div>
     </div>
 
+    <!-- 추가 입력란 -->
+    <div class="extra-fields">
+      <div class="extra-field-row">
+        <label class="extra-field-label">✍️ 작성자</label>
+        <input type="text" id="authorInput" class="extra-field-input" placeholder="예: 콘텐츠기획팀 홍길동">
+      </div>
+      <div class="extra-field-row">
+        <label class="extra-field-label">🔗 CTA 링크 (UTM 포함 전체 URL)</label>
+        <input type="text" id="ctaUrlInput" class="extra-field-input" placeholder="https://worldvision.or.kr/...?utm_source=naver&utm_medium=blog">
+      </div>
+      <div class="extra-field-row">
+        <label class="extra-field-label">🔘 CTA 버튼 텍스트</label>
+        <input type="text" id="ctaTextInput" class="extra-field-input" placeholder="예: 후원하기, 지금 바로 참여하기">
+      </div>
+    </div>
+
     <div class="convert-wrap">
       <button id="convertBtn" disabled>네이버 블로그 HTML로 변환하기</button>
       <div class="shortcut-hint" id="shortcutHint">파일 업로드 후 활성화</div>
@@ -215,6 +250,12 @@
       <button class="tab-btn" id="tabHtml">HTML 코드</button>
       <button class="tab-btn" id="tabChecklist" style="display:none">📋 SEO/GEO</button>
     </div>
+    <!-- 제목 제안 -->
+    <div class="title-suggestions" id="titleSuggestions">
+      <div class="title-suggestions-label">📝 제목 추천 (클릭해서 복사)</div>
+      <div id="titleList"></div>
+    </div>
+
     <div class="output-content">
       <div class="empty-state" id="emptyState">
         <div class="empty-icon">✦</div>
@@ -256,6 +297,7 @@ var geoOn = false;
 var currentInputMode = 'file';
 var extractedImages = [];
 var currentCategory = ''; // 'campaign' | 'info' | ''
+var suggestedTitles = [];
 
 // 카테고리 버튼
 document.getElementById('catCampaign').addEventListener('click', function() {
@@ -459,6 +501,21 @@ function animateSteps() {
 }
 
 function getSystemPrompt() {
+  var author = document.getElementById('authorInput').value.trim();
+  var ctaUrl = document.getElementById('ctaUrlInput').value.trim();
+  var ctaText = document.getElementById('ctaTextInput').value.trim() || '후원하기';
+
+  var ctaRule = '';
+  if (ctaUrl) {
+    ctaRule = '- 글 마지막에 CTA 버튼 삽입 (링크: ' + ctaUrl + ')\n'
+      + '  CTA HTML: <div style="text-align:center;margin:32px 0;"><a href="' + ctaUrl + '" style="display:inline-block;background:#00c473;color:#fff;font-size:16px;font-weight:700;padding:16px 40px;border-radius:50px;text-decoration:none;">' + ctaText + '</a></div>\n';
+  }
+  var authorRule = author ? ('- 글 맨 마지막에 작성자 표기: <p style="font-size:13px;color:#868e96;margin-top:32px;">글. ' + author + '</p>\n') : '';
+
+  var titleRule = '[제목 추천]\n'
+    + '변환된 블로그 글에 어울리는 제목 3개를 아래 형식으로 HTML 맨 앞에 주석으로 추가해주세요.\n'
+    + '형식: <!-- TITLES: 제목1|제목2|제목3 -->\n\n';
+
   var htmlRules = '[네이버 블로그 HTML 규칙]\n'
     + '- 허용 태그만: p, br, b, strong, span, div, h3, ul, li, blockquote, hr\n'
     + '- 모든 스타일은 인라인 style 속성만 사용 (class, 외부 CSS 금지)\n'
@@ -467,10 +524,13 @@ function getSystemPrompt() {
     + '- 일반 문단: <p style="margin:0 0 8px;line-height:2.0;">내용</p>\n'
     + '- 모바일 최적화: br 태그로 적절히 줄바꿈\n\n'
     + '[중요] 원고의 모든 내용을 빠짐없이 변환하세요. 생략하거나 요약하지 마세요.\n'
+    + '[글 수준] 중학교 1학년도 이해할 수 있는 쉬운 단어와 문장으로 작성하세요. 어려운 한자어나 전문용어는 쉽게 풀어쓰세요.\n'
+    + ctaRule
+    + authorRule
     + 'HTML 코드만 출력. 설명이나 코드블록 표시 없이. DOCTYPE html head body 태그 없이 본문만.';
 
   if (currentCategory === 'campaign') {
-    return '당신은 NPO 사회공헌 분야 네이버 블로그 전문 에디터입니다.\n'
+    return titleRule + '당신은 NPO 사회공헌 분야 네이버 블로그 전문 에디터입니다.\n'
       + '아래는 후원 소구가 있는 감성적 사례 캠페인 글입니다. 독자의 마음을 움직이는 스타일로 변환해주세요.\n\n'
       + '[사례캠페인 스타일]\n'
       + '- 이모지 사용 최소화 (전체 글에서 1~2개 이내, 없어도 됨)\n'
@@ -487,7 +547,7 @@ function getSystemPrompt() {
   }
 
   if (currentCategory === 'info') {
-    return '당신은 NPO 사회공헌 분야 네이버 블로그 전문 에디터입니다.\n'
+    return titleRule + '당신은 NPO 사회공헌 분야 네이버 블로그 전문 에디터입니다.\n'
       + '원고를 받아 아래 스타일로 워싱한 뒤, 네이버 블로그 HTML 편집 모드에서 바로 사용 가능한 HTML을 출력합니다.\n\n'
       + '[정보전달 스타일]\n'
       + '- 친근하고 따뜻한 경어체: ~해요, ~인데요, ~이었습니다, ~이에요\n'
@@ -506,7 +566,7 @@ function getSystemPrompt() {
   }
 
   // 카테고리 미선택 — 기본 스타일
-  return '당신은 NPO 사회공헌 분야 네이버 블로그 전문 에디터입니다.\n'
+  return titleRule + '당신은 NPO 사회공헌 분야 네이버 블로그 전문 에디터입니다.\n'
     + '원고를 받아 아래 스타일로 워싱한 뒤, 네이버 블로그 HTML 편집 모드에서 바로 사용 가능한 HTML을 출력합니다.\n\n'
     + '[기본 스타일]\n'
     + '- 친근하고 따뜻한 경어체: ~해요, ~인데요, ~이었습니다\n'
@@ -523,14 +583,22 @@ function renderChecklist(data) {
   if (seoOn && data.seo && data.seo.length) {
     html += '<div class="checklist-section"><div class="checklist-title">🔍 SEO 체크리스트</div>';
     data.seo.forEach(function(item) {
-      html += '<div class="checklist-item ' + item.status + '"><span style="flex-shrink:0">' + item.icon + '</span><span>' + item.text + '</span></div>';
+      html += '<div class="checklist-item ' + item.status + '">'
+        + '<span style="flex-shrink:0">' + item.icon + '</span>'
+        + '<span style="flex:1">' + item.text + '</span>'
+        + '<button class="checklist-apply-btn" onclick="applyChecklist(\'seo\',' + JSON.stringify(item.text) + ')">반영</button>'
+        + '</div>';
     });
     html += '</div>';
   }
   if (geoOn && data.geo && data.geo.length) {
     html += '<div class="checklist-section"><div class="checklist-title">🤖 GEO 체크리스트</div>';
     data.geo.forEach(function(item) {
-      html += '<div class="checklist-item ' + item.status + '"><span style="flex-shrink:0">' + item.icon + '</span><span>' + item.text + '</span></div>';
+      html += '<div class="checklist-item ' + item.status + '">'
+        + '<span style="flex-shrink:0">' + item.icon + '</span>'
+        + '<span style="flex:1">' + item.text + '</span>'
+        + '<button class="checklist-apply-btn" onclick="applyChecklist(\'geo\',' + JSON.stringify(item.text) + ')">반영</button>'
+        + '</div>';
     });
     html += '</div>';
   }
@@ -543,6 +611,72 @@ function renderChecklist(data) {
     html += '</div></div>';
   }
   document.getElementById('checklistPane').innerHTML = html || '<p style="color:var(--gray-400);font-size:13px;text-align:center;margin-top:40px;">체크리스트 생성 중 오류가 발생했어요.</p>';
+}
+
+function parseTitlesFromHTML(html) {
+  var match = html.match(/<!--\s*TITLES:\s*(.+?)\s*-->/);
+  if (match) {
+    suggestedTitles = match[1].split('|').map(function(t) { return t.trim(); }).filter(Boolean);
+    var cleanHTML = html.replace(/<!--\s*TITLES:.+?-->\n?/, '');
+    return cleanHTML;
+  }
+  suggestedTitles = [];
+  return html;
+}
+
+function showTitleSuggestions() {
+  if (!suggestedTitles.length) {
+    document.getElementById('titleSuggestions').classList.remove('visible');
+    return;
+  }
+  var list = document.getElementById('titleList');
+  list.innerHTML = '';
+  suggestedTitles.forEach(function(title) {
+    var div = document.createElement('div');
+    div.className = 'title-option';
+    div.innerHTML = '<span class="title-option-text">' + title + '</span>'
+      + '<button class="title-copy-btn" onclick="copyTitle(this, ' + JSON.stringify(title) + ')">복사</button>';
+    list.appendChild(div);
+  });
+  document.getElementById('titleSuggestions').classList.add('visible');
+}
+
+function copyTitle(btn, title) {
+  navigator.clipboard.writeText(title).then(function() {
+    btn.textContent = '✅ 복사됨';
+    setTimeout(function() { btn.textContent = '복사'; }, 2000);
+  });
+}
+
+function applyChecklist(type, suggestion) {
+  if (!currentHTML) { alert('먼저 변환을 완료해주세요!'); return; }
+  var btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '반영 중...';
+
+  var prompt = '아래 네이버 블로그 HTML에서 다음 개선사항을 반영해주세요.\n\n'
+    + '개선사항: ' + suggestion + '\n\n'
+    + '현재 HTML:\n' + currentHTML + '\n\n'
+    + '개선사항만 최소한으로 수정하고, 나머지는 그대로 유지해주세요.\n'
+    + 'HTML 코드만 출력. 설명 없이. DOCTYPE html head body 태그 없이 본문만.';
+
+  fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 8000, messages: [{ role: 'user', content: prompt }] })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    var html = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    var rawHTML = html.replace(/^```html\n?/, '').replace(/\n?```$/, '').trim();
+    currentHTML = parseTitlesFromHTML(rawHTML);
+    showTitleSuggestions();
+    document.getElementById('previewPane').innerHTML = currentHTML;
+    document.getElementById('htmlCode').value = currentHTML;
+    btn.textContent = '✅ 반영됨';
+    setTimeout(function() { btn.disabled = false; btn.textContent = '반영'; }, 3000);
+  })
+  .catch(function() { btn.disabled = false; btn.textContent = '반영'; });
 }
 
 function convert() {
@@ -590,7 +724,9 @@ function convert() {
       return;
     }
     var html = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
-    currentHTML = html.replace(/^```html\n?/, '').replace(/\n?```$/, '').trim();
+    var rawHTML = html.replace(/^```html\n?/, '').replace(/\n?```$/, '').trim();
+    currentHTML = parseTitlesFromHTML(rawHTML);
+    showTitleSuggestions();
     document.getElementById('loadingState').classList.remove('visible');
     document.getElementById('previewPane').innerHTML = currentHTML;
     document.getElementById('previewPane').classList.add('visible');
