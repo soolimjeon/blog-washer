@@ -5,11 +5,16 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { url } = req.body;
-  if (!url) return res.status(400).json({ error: 'URL이 필요해요' });
-
   try {
+    let body = req.body;
+    if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
+    const url = body && body.url;
+    if (!url) return res.status(400).json({ error: 'URL이 필요해요' });
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
     const response = await fetch(url, {
+      signal: controller.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -19,7 +24,9 @@ export default async function handler(req, res) {
 
     if (!response.ok) return res.status(400).json({ error: '페이지를 불러올 수 없어요 (' + response.status + ')' });
 
-    const html = await response.text();
+    let html = await response.text();
+    clearTimeout(timer);
+    if (html.length > 1500000) html = html.slice(0, 1500000);
 
     // Extract text - remove scripts, styles, nav, footer
     let text = html
@@ -63,6 +70,6 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: '추출 실패: ' + (err && err.message ? err.message : String(err)) });
   }
 }
